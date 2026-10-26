@@ -97,7 +97,11 @@ def unnest(select, parent_select, next_alias_name):
                 or any(find_in_scope(select, exp.AggFunc) for select in parent_select.selects)
             )
         ):
-            column = exp.Max(this=column)
+            # The joined column has to be aggregated to be referenced from an aggregate
+            # query, unless the predicate already sits inside an aggregate function:
+            # SUM(CASE WHEN x = MAX(_u_0.a) ...) would nest aggregates, which no engine allows
+            if not isinstance(predicate.find_ancestor(exp.AggFunc, exp.Select), exp.AggFunc):
+                column = exp.Max(this=column)
         elif not isinstance(select.parent, exp.Subquery):
             return
 

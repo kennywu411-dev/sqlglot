@@ -1692,3 +1692,14 @@ SELECT
     "x"."b" > 0
   ) AS "c"
 FROM "x" AS "x";
+# title: scalar subquery inside an aggregate is unnested without a nested aggregate
+SELECT SUM(CASE WHEN x.a = (SELECT MAX(y.b) AS b FROM y) THEN 1 ELSE 0 END) AS s FROM x AS x;
+WITH "_u_0" AS (
+  SELECT
+    MAX("y"."b") AS "b"
+  FROM "y" AS "y"
+)
+SELECT
+  SUM(CASE WHEN "_u_0"."b" = "x"."a" THEN 1 ELSE 0 END) AS "s"
+FROM "x" AS "x"
+CROSS JOIN "_u_0" AS "_u_0";

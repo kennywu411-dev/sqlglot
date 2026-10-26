@@ -374,3 +374,6 @@ SELECT x.a, w.d FROM x JOIN y ON x.a = y.b AND y.b IN (SELECT z.b AS b FROM y AS
 # execute: true
 SELECT x.a, w.d FROM x JOIN y ON x.a = y.b AND y.b IN (SELECT z.b AS b FROM y AS z WHERE z.b = 2) FULL JOIN w ON FALSE;
 SELECT x.a, w.d FROM x JOIN y ON x.a = y.b AND y.b IN (SELECT z.b AS b FROM y AS z WHERE z.b = 2) FULL JOIN w ON FALSE;
+
+SELECT SUM(CASE WHEN x.a = (SELECT MAX(y.b) AS b FROM y) THEN 1 ELSE 0 END) AS s FROM x;
+SELECT SUM(CASE WHEN x.a = _u_0.b THEN 1 ELSE 0 END) AS s FROM x CROSS JOIN (SELECT MAX(y.b) AS b FROM y) AS _u_0;
