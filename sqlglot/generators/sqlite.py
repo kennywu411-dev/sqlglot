@@ -276,6 +276,14 @@ class SQLiteGenerator(generator.Generator):
         if expression.is_type("date"):
             return self.func("DATE", expression.this)
 
+        # SQLite has no date or time storage classes, so CAST(x AS DATETIME) is a NUMERIC
+        # cast that turns '2014-09-01' into 2014; the date functions give the intended value
+        if expression.is_type("datetime", "timestamp", "timestampntz"):
+            return self.func("DATETIME", expression.this)
+
+        if expression.is_type("time"):
+            return self.func("TIME", expression.this)
+
         return super().cast_sql(expression)
 
     # https://www.sqlite.org/gencol.html

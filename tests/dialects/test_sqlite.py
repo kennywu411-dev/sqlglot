@@ -611,6 +611,26 @@ class TestSQLite(Validator):
                 "postgres": "CREATE TABLE t (x DOUBLE PRECISION, y DOUBLE PRECISION)",
             },
         )
+    def test_datetime_casts(self):
+        # SQLite has no date/time storage classes: CAST(x AS DATETIME) is a NUMERIC cast,
+        # so the date functions are the only way to express these casts
+        for dtype in ("DATETIME", "TIMESTAMP"):
+            self.validate_all(
+                f"SELECT CAST(x AS {dtype}) FROM t",
+                write={
+                    "sqlite": "SELECT DATETIME(x) FROM t",
+                    "duckdb": "SELECT CAST(x AS TIMESTAMP) FROM t",
+                },
+            )
+        self.validate_all(
+            "SELECT CAST(x AS TIME) FROM t",
+            write={"sqlite": "SELECT TIME(x) FROM t", "duckdb": "SELECT CAST(x AS TIME) FROM t"},
+        )
+        self.validate_all(
+            "SELECT DATETIME(x) FROM t",
+            read={"duckdb": "SELECT CAST(x AS TIMESTAMP) FROM t"},
+        )
+        self.validate_identity("SELECT CAST(x AS TIMESTAMPTZ) FROM t")
 
     def test_longvarchar_dtype(self):
         self.validate_all(
